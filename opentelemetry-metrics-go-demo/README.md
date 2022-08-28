@@ -6,6 +6,12 @@ the demo add a custom opentelemetry metrics middleware `otelmetric` to echo fram
 
 this `otelmetric` middleware can work as a replacement for `github.com/labstack/echo-contrib/prometheus`
 
+## warning
+
+according https://opentelemetry.io/docs/instrumentation/go/
+
+the status Metrics component for OpenTelemetry Go is **Alpha** currently, use it at your own risk
+
 ## docs
 
 https://github.com/labstack/echo-contrib/blob/master/prometheus/prometheus.go
