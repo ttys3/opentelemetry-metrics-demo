@@ -1,11 +1,12 @@
 mod middleware;
 mod state;
 
-use std::{net::SocketAddr, time::Duration};
+use std::{env, net::SocketAddr, time::Duration};
 
 use axum::{routing::get, Router};
 
-use opentelemetry::{global, Context};
+use opentelemetry::sdk::resource;
+use opentelemetry::{global, Context, KeyValue};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use rand::Rng;
@@ -20,11 +21,18 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    let other = resource::Resource::new(vec![KeyValue::new(
+        "service.name",
+        env!("CARGO_CRATE_NAME"),
+    )]);
+    let res = resource::Resource::default().merge(&other);
+
     // init global meter provider and prometheus exporter
     let exporter = opentelemetry_prometheus::exporter()
         .with_default_histogram_boundaries(vec![
             0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
         ])
+        .with_resource(res)
         .init();
     let meter = global::meter("my-app");
     let http_counter = meter
