@@ -21,29 +21,29 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    // init global meter provider and prometheus exporter
     let other = resource::Resource::new(vec![KeyValue::new(
         "service.name",
         env!("CARGO_CRATE_NAME"),
     )]);
     let res = resource::Resource::default().merge(&other);
-
-    // init global meter provider and prometheus exporter
     let exporter = opentelemetry_prometheus::exporter()
         .with_default_histogram_boundaries(vec![
             0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
         ])
         .with_resource(res)
         .init();
+
     let meter = global::meter("my-app");
     let http_counter = meter
-        .u64_counter("http.counter")
-        .with_description("Counts http request")
+        .u64_counter(format!("{}.requests_total", env!("CARGO_CRATE_NAME")))
+        .with_description("How many HTTP requests processed, partitioned by status code and HTTP method.")
         .init();
 
     // migrate from f64_value_recorder to f64_histogram if opentelemetry 0.18.0 released
     let histogram = meter
-        .f64_value_recorder("http.histogram")
-        .with_description("Counts http request latency")
+        .f64_value_recorder(format!("{}.request_duration_seconds", env!("CARGO_CRATE_NAME")))
+        .with_description("The HTTP request latencies in seconds.")
         .init();
 
     let state = state::AppState {
