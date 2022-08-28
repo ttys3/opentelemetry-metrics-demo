@@ -59,6 +59,7 @@ var reqCnt = &Metric{
 	Name:        "requests_total",
 	Description: "How many HTTP requests processed, partitioned by status code and HTTP method.",
 	Type:        "counter_vec",
+	Unit:        unit.Dimensionless,
 	Args:        []string{"code", "method", "host", "url"}}
 
 var reqDur = &Metric{
@@ -67,6 +68,7 @@ var reqDur = &Metric{
 	Description: "The HTTP request latencies in seconds.",
 	Args:        []string{"code", "method", "url"},
 	Type:        "histogram_vec",
+	Unit:        unit.Milliseconds,
 	Buckets:     reqDurBuckets}
 
 var resSz = &Metric{
@@ -75,6 +77,7 @@ var resSz = &Metric{
 	Description: "The HTTP response sizes in bytes.",
 	Args:        []string{"code", "method", "url"},
 	Type:        "histogram_vec",
+	Unit:        unit.Bytes,
 	Buckets:     resSzBuckets}
 
 var reqSz = &Metric{
@@ -83,6 +86,7 @@ var reqSz = &Metric{
 	Description: "The HTTP request sizes in bytes.",
 	Args:        []string{"code", "method", "url"},
 	Type:        "histogram_vec",
+	Unit:        unit.Bytes,
 	Buckets:     reqSzBuckets}
 
 var standardMetrics = []*Metric{
@@ -213,25 +217,25 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 		case reqCnt:
 			p.reqCnt, _ = meter.SyncInt64().Counter(
 				subsystem+"."+metricDef.Name,
-				instrument.WithUnit(unit.Dimensionless),
+				instrument.WithUnit(metricDef.Unit),
 				instrument.WithDescription(metricDef.Description),
 			)
 		case reqDur:
 			p.reqDur, _ = meter.SyncFloat64().Histogram(
 				subsystem+"."+metricDef.Name,
-				instrument.WithUnit(unit.Milliseconds),
+				instrument.WithUnit(metricDef.Unit),
 				instrument.WithDescription(metricDef.Description),
 			)
 		case resSz:
 			p.resSz, _ = meter.SyncFloat64().Histogram(
 				subsystem+"."+metricDef.Name,
-				instrument.WithUnit(unit.Bytes),
+				instrument.WithUnit(metricDef.Unit),
 				instrument.WithDescription(metricDef.Description),
 			)
 		case reqSz:
 			p.reqSz, _ = meter.SyncFloat64().Histogram(
 				subsystem+"."+metricDef.Name,
-				instrument.WithUnit(unit.Bytes),
+				instrument.WithUnit(metricDef.Unit),
 				instrument.WithDescription(metricDef.Description),
 			)
 		}
