@@ -19,7 +19,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	prom := otelmetric.NewPrometheus(serviceName, nil)
+	prom := otelmetric.NewPrometheus(serviceName, URLSkipper)
 	prom.Use(e)
 
 	// Route => handler
@@ -32,4 +32,14 @@ func main() {
 
 	// Start server
 	e.Logger.Fatal(e.Start(":1323"))
+}
+
+func URLSkipper(c echo.Context) bool {
+
+	// skip /metrics
+	if c.Request().RequestURI == "/metrics" {
+		return true
+	}
+
+	return false
 }
